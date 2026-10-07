@@ -111,7 +111,37 @@
       </div>
     </div>
 
-    <div class="activity-list" id="activityList">
+    
+<!-- Hourly Packages -->
+<div class="hourly-packages">
+  <h3 class="hourly-title">⚡ Hourly Packages</h3>
+  <p class="hourly-subtitle">Choose a package that matches your workload</p>
+  <div class="package-grid">
+    <button class="package-card" type="button" data-hours="5" data-price="2500">
+      <div class="package-hours">⏱️ 5 HOURS</div>
+      <div class="package-price">KSh 2,500</div>
+      <div class="package-action">Tap to select</div>
+    </button>
+    <button class="package-card" type="button" data-hours="7" data-price="3500">
+      <div class="package-hours">⏱️ 7 HOURS</div>
+      <div class="package-price">KSh 3,500</div>
+      <div class="package-action">Tap to select</div>
+    </button>
+    <button class="package-card" type="button" data-hours="9" data-price="4500">
+      <div class="package-hours">⏱️ 9 HOURS</div>
+      <div class="package-price">KSh 4,500</div>
+      <div class="package-action">Tap to select</div>
+    </button>
+    <button class="package-card" type="button" data-hours="13" data-price="6500">
+      <div class="package-hours">⏱️ 13 HOURS</div>
+      <div class="package-price">KSh 6,500</div>
+      <div class="package-action">Tap to select</div>
+    </button>
+  </div>
+  <div id="packageResult" class="package-result"></div>
+</div>
+
+<div class="activity-list" id="activityList">
       <!-- items appended in JS -->
     </div>
 
@@ -877,6 +907,22 @@
     })();
 
     // end of script
-  </script>
+  
+// ===== HOURLY PACKAGE SELECTION =====
+document.querySelectorAll('.package-card').forEach(card=>{
+  card.addEventListener('click',()=>{
+    document.querySelectorAll('.package-card').forEach(c=>c.classList.remove('selected'));
+    card.classList.add('selected');
+    const hours=card.dataset.hours;
+    const price=Number(card.dataset.price).toLocaleString();
+    const result=document.getElementById('packageResult');
+    result.textContent=`✅ Selected: ${hours} hours — KSh ${price}`;
+    result.classList.remove('show');
+    void result.offsetWidth;
+    result.classList.add('show');
+  });
+});
+
+</script>
 </body>
 </html>
