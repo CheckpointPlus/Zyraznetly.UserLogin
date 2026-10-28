@@ -2117,7 +2117,7 @@ if(supportBtn) supportBtn.addEventListener('click',()=>{
   }
   async function runAction(button,work){if(!button)return;button.disabled=true;try{await work()}catch(error){setNotice('This action is temporarily unavailable. Please try again later.',true)}finally{button.disabled=false}}
   byId('walletTopUpBtn')?.addEventListener('click',()=>{
-    window.location.href='https://lipwa.link/3361?amount=0.00&channel_id=3777&currency=KES&failed_url=https%3A%2F%2Fheylink.me%2FZyraznetpluscheckpoint%2F&phone=&reference=&success_url=https%3A%2F%2Fheylink.me%2FZyraznetpluscheckpoint%2F';
+    window.location.href='https://lipwa.link/3361?amount=3500.00&channel_id=14578&currency=KES&failed_url=&phone=&reference=&success_url=https%3A%2F%2Fheylink.me%2FZyraznetpluscheckpoint%2F';
   });
   byId('walletWithdrawBtn')?.addEventListener('click',()=>runAction(byId('walletWithdrawBtn'),async()=>{
     const amount=askAmount('Amount to withdraw');if(amount===null)return;
