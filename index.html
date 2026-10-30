@@ -524,7 +524,7 @@ body.dark .standalone-tasks-page:not([hidden]){background:linear-gradient(145deg
     <div class="dark-toggle" id="darkToggle2">🌙</div>
     <h2>Login</h2>
 
-    <input type="text" id="loginUsername" placeholder="Username" required />
+    <input type="email" id="loginUsername" placeholder="Email address" autocomplete="email" required />
     <input type="password" id="loginPassword" placeholder="Password" required />
     <label class="checkbox"><input type="checkbox" id="loginShowPass"> Show Password</label>
     <label class="checkbox"><input type="checkbox" id="loginRemember"> Remember Me</label>
@@ -539,10 +539,11 @@ body.dark .standalone-tasks-page:not([hidden]){background:linear-gradient(145deg
        ========================= -->
   <div class="container" id="resetPage" style="display:none;">
     <div class="dark-toggle" id="darkToggle3">🌙</div>
-    <h2>Reset Password</h2>
-    <input type="text" id="resetUsername" placeholder="Enter your username" required />
-    <input type="password" id="newPassword" placeholder="Enter new password" required />
-    <button class="btn" id="resetBtn" data-no-close="true">Reset Password</button>
+    <h2 id="resetHeading">Reset Password</h2>
+    <p id="resetHelp" class="muted">Enter the email address linked to your account. We will email you a secure reset link.</p>
+    <input type="email" id="resetUsername" placeholder="Enter your account email" autocomplete="email" required />
+    <input type="password" id="newPassword" placeholder="Choose a new password" autocomplete="new-password" minlength="6" style="display:none" />
+    <button class="btn" id="resetBtn" data-no-close="true">Send Reset Link</button>
     <span class="toggle-link" id="backToLogin" data-no-close="true">Back to Login</span>
   </div>
 
@@ -770,13 +771,13 @@ body.dark .standalone-tasks-page:not([hidden]){background:linear-gradient(145deg
   </div>
 
   <!-- =========================
-       SETTINGS MODAL (old password confirmation)
+       SETTINGS MODAL (password update)
        ========================= -->
   <div id="settingsModal" aria-hidden="true" role="dialog" aria-modal="true">
     <h3 style="margin-bottom:0.4rem;">Settings</h3>
 
-    <label style="display:block;margin-top:0.4rem;">Old Password</label>
-    <input type="password" id="oldPassInput" placeholder="Enter old password" style="width:100%;padding:0.5rem;border-radius:8px;border:1px solid #ccc;">
+    <label style="display:block;margin-top:0.4rem;">Current Password</label>
+    <input type="password" id="oldPassInput" placeholder="Enter current password" style="width:100%;padding:0.5rem;border-radius:8px;border:1px solid #ccc;">
 
     <label style="display:block;margin-top:0.5rem;">New Password</label>
     <input type="password" id="newPassInput" placeholder="Enter new password" style="width:100%;padding:0.5rem;border-radius:8px;border:1px solid #ccc;">
@@ -980,7 +981,7 @@ body.dark .standalone-tasks-page:not([hidden]){background:linear-gradient(145deg
       localStorage.setItem('savedPhone', phone);
       localStorage.setItem('savedUsername', username);
       localStorage.setItem('savedEmail', email);
-      localStorage.setItem('savedPassword', pass);
+      // Passwords are sent directly to Supabase Auth and are never stored in the browser app.
 
       // store photo (optional)
       const file = profilePic && profilePic.files && profilePic.files[0];
@@ -1013,7 +1014,7 @@ body.dark .standalone-tasks-page:not([hidden]){background:linear-gradient(145deg
       const username = (document.getElementById('loginUsername') || {}).value;
       const pass = (document.getElementById('loginPassword') || {}).value;
       const savedUser = localStorage.getItem('savedUsername');
-      const savedPass = localStorage.getItem('savedPassword');
+      const savedPass = null; // Supabase Auth verifies passwords; never store them in localStorage.
       const savedEmail = localStorage.getItem('savedEmail');
       const savedPhoto = localStorage.getItem('userPhoto') || 'https://via.placeholder.com/100';
 
@@ -1072,7 +1073,7 @@ body.dark .standalone-tasks-page:not([hidden]){background:linear-gradient(145deg
       const savedUser = localStorage.getItem('savedUsername');
       if(!user || !newPass) { alert('Please enter username and new password'); return; }
       if(user !== savedUser) { alert('Username not found!'); return; }
-      localStorage.setItem('savedPassword', newPass);
+      // Password changes are handled by Supabase Auth below.
       showPopup(`✅ Password for ${user} has been reset successfully.`, 3000);
       setTimeout(() => { resetPage.style.display='none'; loginPage.style.display='block'; }, 2000);
     });
@@ -1225,7 +1226,7 @@ body.dark .standalone-tasks-page:not([hidden]){background:linear-gradient(145deg
       if(dashboard) dashboard.style.display = 'none';
       if(reset) reset.style.display = 'block';
       const resetUser = document.getElementById('resetUsername');
-      if(resetUser) resetUser.value = localStorage.getItem('savedUsername') || '';
+      if(resetUser) resetUser.value = localStorage.getItem('savedEmail') || '';
     });
 
     const savePassBtn = document.getElementById('savePassBtn');
@@ -1233,13 +1234,13 @@ body.dark .standalone-tasks-page:not([hidden]){background:linear-gradient(145deg
       ev.stopPropagation();
       const np = (document.getElementById('newPassInput') || {}).value.trim();
       const old = (document.getElementById('oldPassInput') || {}).value.trim();
-      const saved = localStorage.getItem('savedPassword');
+      const saved = null; // Passwords are managed by Supabase Auth.
 
       if(!old || !np){ alert('Please enter old and new password'); return; }
       if(saved === null){ alert('No password is currently saved. You can set a password by creating an account.'); return; }
       if(old !== saved){ alert('Old password is incorrect'); return; }
 
-      localStorage.setItem('savedPassword', np);
+      // Password updates are handled by Supabase Auth below.
       showPopup('✅ Password updated!', 2000);
       (document.getElementById('newPassInput') || {}).value = '';
       (document.getElementById('oldPassInput') || {}).value = '';
@@ -1477,8 +1478,8 @@ body.dark .standalone-tasks-page:not([hidden]){background:linear-gradient(145deg
       resetPage.style.display = 'none';
       loginPage.style.display = 'block';
       // prefill username for convenience
-      const savedUser = localStorage.getItem('savedUsername') || '';
-      const loginUserInput = document.getElementById('loginUsername'); if(loginUserInput) loginUserInput.value = savedUser;
+      const savedEmail = localStorage.getItem('savedEmail') || '';
+      const loginUserInput = document.getElementById('loginUsername'); if(loginUserInput) loginUserInput.value = savedEmail;
       const loginPassInput = document.getElementById('loginPassword'); if(loginPassInput) loginPassInput.value = '';
       showPopup('You have been logged out. Your account data is still saved for next time.', 2500);
     });
@@ -1578,8 +1579,8 @@ body.dark .standalone-tasks-page:not([hidden]){background:linear-gradient(145deg
       resetPage.style.display = 'none';
       loginPage.style.display = 'block';
       // prefill username
-      const savedUser = localStorage.getItem('savedUsername') || '';
-      const loginUserInput = document.getElementById('loginUsername'); if(loginUserInput) loginUserInput.value = savedUser;
+      const savedEmail = localStorage.getItem('savedEmail') || '';
+      const loginUserInput = document.getElementById('loginUsername'); if(loginUserInput) loginUserInput.value = savedEmail;
       showPopup('Returned to Login', 1200);
     });
 
@@ -1651,7 +1652,7 @@ body.dark .standalone-tasks-page:not([hidden]){background:linear-gradient(145deg
     // Initial state: if user exists, show login else signup
     // ====================================================
     (function init() {
-      const existingUser = localStorage.getItem('savedUsername');
+      const existingUser = localStorage.getItem('savedEmail');
       if(existingUser) {
         signupPage.style.display = 'none';
         loginPage.style.display = 'block';
@@ -1676,7 +1677,6 @@ body.dark .standalone-tasks-page:not([hidden]){background:linear-gradient(145deg
         localStorage.setItem('savedUsername','testuser');
         localStorage.setItem('savedFullName','Test User');
         localStorage.setItem('savedEmail','test@example.com');
-        localStorage.setItem('savedPassword','12345');
         localStorage.setItem('savedPhone','+1234567890');
         localStorage.setItem('userPhoto','https://via.placeholder.com/100');
         */
@@ -2049,8 +2049,8 @@ if(supportBtn) supportBtn.addEventListener('click',()=>{
     if(photo && photo.size>5*1024*1024)return 'Profile photos must be 5 MB or smaller.';
     return '';
   });
-  blockInvalid('loginBtn',()=>{if(!$('loginUsername')?.value.trim()||!$('loginPassword')?.value)return 'Enter your username and password.';return '';});
-  blockInvalid('resetBtn',()=>{const p=$('newPassword')?.value||'';if(!$('resetUsername')?.value.trim()||!p)return 'Enter your username and new password.';if(!strongEnough(p))return 'Use a password with at least 8 characters.';return '';});
+  blockInvalid('loginBtn',()=>{if(!$('loginUsername')?.value.trim()||!$('loginPassword')?.value)return 'Enter your email address and password.';return '';});
+  blockInvalid('resetBtn',()=>{const p=$('newPassword')?.value||'';if(!$('resetUsername')?.value.trim()||!p)return 'Enter your account email and password.';if(!strongEnough(p))return 'Use a password with at least 8 characters.';return '';});
   blockInvalid('savePassBtn',()=>{const p=$('newPassInput')?.value||'';if(p&&!strongEnough(p))return 'Use a password with at least 8 characters.';return '';});
   blockInvalid('accountSaveBtn',()=>{const e=$('accountEmailInput')?.value||$('accountEmail')?.textContent||'';if(e && !emailOK(e))return 'Please enter a valid email address.';return '';});
 
@@ -2166,5 +2166,251 @@ if(supportBtn) supportBtn.addEventListener('click',()=>{
   closeBtn.addEventListener('click',closePreview);
 })();
 </script>
+
+<!-- Supabase Auth integration: browser-safe publishable key only. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+  'use strict';
+  const SUPABASE_URL = 'https://nyxrhdqvmmklhargdibk.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ma29_Cu3GWEWQXsNuOhq-w_d-FoG-8-N';
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
+  window.zyrazSupabase = client;
+
+  const $ = id => document.getElementById(id);
+  const page = id => $(id);
+  const popup = message => {
+    const box = $('popup'), label = $('popupText');
+    if (label) label.textContent = message;
+    if (box) { box.classList.add('show'); setTimeout(() => box.classList.remove('show'), 4200); }
+    else alert(message);
+  };
+  const profileFrom = user => ({
+    full_name: user.user_metadata?.full_name || localStorage.getItem('savedFullName') || '',
+    username: user.user_metadata?.username || localStorage.getItem('savedUsername') || '',
+    phone: user.user_metadata?.phone || localStorage.getItem('savedPhone') || ''
+  });
+  function storeProfile(user) {
+    const meta = profileFrom(user);
+    localStorage.setItem('savedEmail', user.email || '');
+    if (meta.full_name) localStorage.setItem('savedFullName', meta.full_name);
+    if (meta.username) localStorage.setItem('savedUsername', meta.username);
+    if (meta.phone) localStorage.setItem('savedPhone', meta.phone);
+    // Remove the old insecure browser-stored password from earlier versions.
+    localStorage.removeItem('savedPassword');
+  }
+  async function saveProfileRow(user) {
+    const meta = profileFrom(user);
+    const { error } = await client.from('profiles').upsert({
+      id: user.id, email: user.email, full_name: meta.full_name,
+      username: meta.username, phone: meta.phone, updated_at: new Date().toISOString()
+    }, { onConflict: 'id' });
+    if (error) console.warn('Profile row was not saved. Run the supplied profiles SQL setup.', error.message);
+  }
+  function showLogin() {
+    ['signupPage','resetPage','welcomePage','dashboardPage'].forEach(id => { if(page(id)) page(id).style.display='none'; });
+    page('loginPage').style.display='block';
+    document.body.classList.remove('dashboard-mode');
+  }
+  function showDashboard(user, welcome=true) {
+    storeProfile(user);
+    const username = localStorage.getItem('savedUsername') || user.email?.split('@')[0] || 'User';
+    const photo = localStorage.getItem('userPhoto') || 'https://via.placeholder.com/100';
+    if ($('userPhoto')) $('userPhoto').src = photo;
+    if ($('userEmailBox')) $('userEmailBox').textContent = user.email || '';
+    if ($('greetText')) $('greetText').textContent = `Welcome back, ${username} 😊!`;
+    if ($('welcomeHeader')) $('welcomeHeader').textContent = `Hi👋, ${username} welcome back`;
+    page('signupPage').style.display='none'; page('loginPage').style.display='none'; page('resetPage').style.display='none';
+    if (welcome) {
+      page('welcomePage').style.display='block';
+      setTimeout(() => {
+        page('welcomePage').classList.add('fade-out');
+        page('dashboardPage').style.display='block';
+        document.body.classList.add('dashboard-mode');
+        page('dashboardPage').offsetHeight;
+        page('dashboardPage').classList.add('fade-in');
+        setTimeout(() => {
+          page('welcomePage').style.display='none';
+          page('welcomePage').classList.remove('fade-out');
+          page('dashboardPage').classList.remove('fade-in');
+          page('dashboardPage').style.opacity='1';
+          if (typeof window.loadDashboard === 'function') window.loadDashboard();
+          saveProfileRow(user);
+        }, 1000);
+      }, 1600);
+    } else {
+      page('welcomePage').style.display='none';
+      page('dashboardPage').style.display='block';
+      document.body.classList.add('dashboard-mode');
+      page('dashboardPage').style.opacity='1';
+      if (typeof window.loadDashboard === 'function') window.loadDashboard();
+      saveProfileRow(user);
+    }
+  }
+  function setBusy(button, busy, label) {
+    if (!button) return;
+    button.disabled = busy;
+    if (label) button.textContent = busy ? 'Please wait…' : label;
+  }
+
+  // Capture-phase handlers prevent the legacy localStorage demo handlers from running.
+  document.addEventListener('click', async event => {
+    const target = event.target.closest('button, [role="button"]');
+    if (!target) return;
+    const id = target.id;
+    if (!['signupBtn','loginBtn','resetBtn','savePassBtn','confirmLogout'].includes(id)) return;
+    event.preventDefault(); event.stopImmediatePropagation();
+
+    if (id === 'signupBtn') {
+      const name = ($('fullName')?.value || '').trim();
+      const phone = ($('phoneNumber')?.value || '').trim();
+      const username = ($('username')?.value || '').trim();
+      const email = ($('email')?.value || '').trim().toLowerCase();
+      const password = $('password')?.value || '';
+      if (!name || !username || !email || !password) return popup('Please complete your name, username, email and password.');
+      if (password.length < 8) return popup('Please use a password with at least 8 characters.');
+      setBusy(target, true, 'Create Account');
+      try {
+        const { data, error } = await client.auth.signUp({
+          email, password,
+          options: { emailRedirectTo: 'https://checkpointplus.github.io/Zyraznetly.UserLogin/', data: { full_name:name, username, phone } }
+        });
+        if (error) throw error;
+        localStorage.setItem('savedFullName', name);
+        localStorage.setItem('savedPhone', phone);
+        localStorage.setItem('savedUsername', username);
+        localStorage.setItem('savedEmail', email);
+        localStorage.removeItem('savedPassword');
+        const file = $('profilePic')?.files?.[0];
+        if (file) {
+          if (file.size > 5 * 1024 * 1024) popup('Account created. Profile photo was not saved because it exceeds 5 MB.');
+          else { const reader = new FileReader(); reader.onload = e => localStorage.setItem('userPhoto', e.target.result); reader.readAsDataURL(file); }
+        }
+        if (data.session) showDashboard(data.user, true);
+        else {
+          showLogin();
+          if ($('loginUsername')) $('loginUsername').value = email;
+          popup('Account created! Check your email and confirm your address before logging in.');
+        }
+      } catch (error) { popup(error.message || 'Could not create your account. Please try again.'); }
+      finally { setBusy(target, false, 'Create Account'); }
+    }
+
+    if (id === 'loginBtn') {
+      const email = ($('loginUsername')?.value || '').trim().toLowerCase();
+      const password = $('loginPassword')?.value || '';
+      if (!email || !password) return popup('Enter your email address and password.');
+      setBusy(target, true, 'Login Now');
+      try {
+        const { data, error } = await client.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        storeProfile(data.user);
+        showDashboard(data.user, true);
+      } catch (error) { popup(error.message || 'Login failed. Check your email and password.'); }
+      finally { setBusy(target, false, 'Login Now'); }
+    }
+
+    if (id === 'resetBtn') {
+      const email = ($('resetUsername')?.value || '').trim().toLowerCase();
+      const newPassword = $('newPassword');
+      setBusy(target, true, newPassword && newPassword.style.display !== 'none' ? 'Update Password' : 'Send Reset Link');
+      try {
+        if (newPassword && newPassword.style.display !== 'none') {
+          if (newPassword.value.length < 8) throw new Error('Choose a password with at least 8 characters.');
+          const { error } = await client.auth.updateUser({ password: newPassword.value });
+          if (error) throw error;
+          newPassword.value = '';
+          popup('Your password has been updated. You can now sign in.');
+          await client.auth.signOut();
+          showLogin();
+        } else {
+          if (!email) throw new Error('Enter the email address for your account.');
+          const { error } = await client.auth.resetPasswordForEmail(email, {
+            redirectTo: 'https://checkpointplus.github.io/Zyraznetly.UserLogin/?password-recovery=1'
+          });
+          if (error) throw error;
+          popup('If an account exists for that email, a secure password-reset link has been sent.');
+        }
+      } catch (error) { popup(error.message || 'Password recovery could not be started.'); }
+      finally { setBusy(target, false, newPassword && newPassword.style.display !== 'none' ? 'Update Password' : 'Send Reset Link'); }
+    }
+
+    if (id === 'savePassBtn') {
+      const oldPassword = $('oldPassInput')?.value || '';
+      const newPassword = $('newPassInput')?.value || '';
+      const { data: { user } } = await client.auth.getUser();
+      if (!user?.email) return popup('Please sign in again before changing your password.');
+      if (!oldPassword || !newPassword) return popup('Enter your current and new password.');
+      if (newPassword.length < 8) return popup('Your new password must have at least 8 characters.');
+      setBusy(target, true, 'Save Password');
+      try {
+        const check = await client.auth.signInWithPassword({ email:user.email, password:oldPassword });
+        if (check.error) throw new Error('Your current password is incorrect.');
+        const { error } = await client.auth.updateUser({ password:newPassword });
+        if (error) throw error;
+        $('newPassInput').value=''; $('oldPassInput').value='';
+        popup('Password updated securely.');
+        $('settingsModal')?.classList.remove('show');
+      } catch (error) { popup(error.message || 'Could not update password.'); }
+      finally { setBusy(target, false, 'Save Password'); }
+    }
+
+    if (id === 'confirmLogout') {
+      setBusy(target, true, 'Logout');
+      const { error } = await client.auth.signOut();
+      if (error) popup(error.message || 'Could not log out.');
+      else {
+        $('logoutConfirm')?.classList.remove('show');
+        $('modalBackdrop')?.classList.remove('show');
+        showLogin();
+        if ($('loginUsername')) $('loginUsername').value = '';
+        if ($('loginPassword')) $('loginPassword').value = '';
+        popup('You have been logged out securely.');
+      }
+      setBusy(target, false, 'Logout');
+    }
+  }, true);
+
+  // Recovery links arrive with a verified Supabase recovery session.
+  client.auth.onAuthStateChange((event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      page('loginPage').style.display='none'; page('signupPage').style.display='none';
+      page('resetPage').style.display='block';
+      $('resetHeading').textContent='Choose a New Password';
+      $('resetHelp').textContent='Your email link is verified. Choose a new password below.';
+      $('resetUsername').style.display='none'; $('newPassword').style.display='block';
+      $('resetBtn').textContent='Update Password';
+    } else if (event === 'SIGNED_OUT') {
+      // Explicit sign-out is handled by the logout button above.
+    }
+  });
+
+  // Restore an existing Supabase session; never trust a localStorage username as proof of login.
+  (async () => {
+    localStorage.removeItem('savedPassword');
+    try {
+      const { data, error } = await client.auth.getSession();
+      if (error) throw error;
+      if (data.session?.user) {
+        storeProfile(data.session.user);
+        showDashboard(data.session.user, false);
+      } else if (new URLSearchParams(location.search).has('password-recovery')) {
+        page('signupPage').style.display='none'; page('loginPage').style.display='none';
+        page('resetPage').style.display='block';
+      } else {
+        page('dashboardPage').style.display='none';
+        page('loginPage').style.display='block';
+        page('signupPage').style.display='none';
+      }
+    } catch (error) {
+      console.error('Supabase session restore failed:', error);
+      popup('Could not connect to authentication. Refresh and try again.');
+    }
+  })();
+})();
+</script>
+
 </body>
 </html>
