@@ -564,6 +564,67 @@ body.dark #closeAccountModal{background:#30384d;color:#fff}
   }
 </style>
 
+
+
+<!-- ZyrazNet+ requested green dashboard accents and desktop floating navigation fit -->
+<style id="zyraznet-green-dashboard-update">
+  /* Bright, consistent green glass buttons across the complete Quick Actions grid. */
+  #dashboardPage .quick-action-grid{gap:.62rem}
+  #dashboardPage .quick-action{
+    color:#fff!important;
+    background:linear-gradient(135deg,#00a83b 0%,#00d957 48%,#7cff39 100%)!important;
+    border:1px solid rgba(220,255,230,.9)!important;
+    box-shadow:0 0 0 1px rgba(0,190,70,.22),0 6px 16px rgba(0,170,60,.28),0 0 18px rgba(0,235,95,.2),inset 0 1px 0 rgba(255,255,255,.48)!important;
+    text-shadow:0 1px 4px rgba(0,65,25,.48);
+  }
+  #dashboardPage .quick-action::after{border-color:rgba(255,255,255,.42)!important}
+  #dashboardPage .quick-action:hover,
+  #dashboardPage .quick-action:focus-visible{
+    filter:saturate(1.18) brightness(1.1)!important;
+    box-shadow:0 0 12px rgba(0,235,95,.48),0 0 24px rgba(0,190,70,.32),0 9px 20px rgba(0,120,45,.25)!important;
+  }
+  body.dark #dashboardPage .quick-action{color:#fff!important;border-color:rgba(220,255,230,.8)!important}
+
+  /* Active Package: fully yellow card with high-contrast dark lettering. */
+  #dashboardPage .active-package{
+    background:linear-gradient(135deg,#ffe44d 0%,#ffd21f 52%,#ffed78 100%)!important;
+    color:#292000!important;
+    border:1px solid rgba(255,190,0,.9)!important;
+    box-shadow:0 8px 22px rgba(220,165,0,.24),inset 0 1px 0 rgba(255,255,255,.7)!important;
+  }
+  #dashboardPage .active-package .active-label{color:#5a4600!important;opacity:1!important}
+  #dashboardPage .active-package .active-value,
+  #dashboardPage .active-package .active-price{color:#241c00!important}
+  #dashboardPage .active-package .active-status{
+    color:#3b2d00!important;
+    background:rgba(255,255,255,.38)!important;
+    border:1px solid rgba(145,105,0,.16);
+  }
+
+  /* Keep the notification bubble green and visually tied to the new theme. */
+  .notification-fab{
+    background:linear-gradient(135deg,#00a83b,#00df59 58%,#8aff45)!important;
+    box-shadow:0 8px 24px rgba(0,165,60,.34),0 0 16px rgba(0,225,85,.22)!important;
+  }
+  .notification-fab:hover{box-shadow:0 11px 28px rgba(0,165,60,.42),0 0 20px rgba(0,225,85,.3)!important}
+
+  /* Desktop floating navigation expands cleanly across the available screen width. */
+  @media(min-width:681px){
+    .checkpoint-bottom-nav{
+      width:min(760px,calc(100vw - 48px))!important;
+      max-width:calc(100vw - 48px)!important;
+      min-height:76px!important;
+      padding:9px 14px!important;
+      gap:8px!important;
+      border-radius:26px!important;
+    }
+    .checkpoint-bottom-nav-item{min-height:58px!important;font-size:.74rem!important}
+    .checkpoint-bottom-nav-item .bottom-nav-icon{font-size:1.45rem!important}
+    body.dashboard-mode .notification-fab{right:max(24px,calc((100vw - 760px)/2 + 12px))!important;bottom:104px!important}
+    body.dashboard-mode .notification-panel{right:max(24px,calc((100vw - 760px)/2 + 12px))!important;bottom:164px!important}
+  }
+</style>
+
 </head>
 <body>
   <div id="petalContainer" aria-hidden="true"></div>
@@ -2822,6 +2883,356 @@ html body #accountModal #checkpointWallet #walletTopUpBtn{
   }
 </style>
 
+
+
+
+<!-- Refined user-requested yellow, rounded green buttons, and animated performance glow -->
+<style id="zyraznet-neon-polish-v2">
+  /* Active Package: stronger, richer yellow with a bright golden edge glow. */
+  #dashboardPage .active-package{
+    background:linear-gradient(135deg,#fff000 0%,#ffdc00 48%,#ffc400 100%)!important;
+    border:1.5px solid #fff36a!important;
+    box-shadow:
+      0 0 7px rgba(255,226,0,.95),
+      0 0 17px rgba(255,196,0,.82),
+      0 0 31px rgba(255,185,0,.58),
+      0 8px 22px rgba(205,145,0,.28),
+      inset 0 1px 0 rgba(255,255,210,.9)!important;
+  }
+  #dashboardPage .active-package .active-status{
+    background:rgba(255,255,255,.48)!important;
+    border-color:rgba(120,85,0,.22)!important;
+  }
+
+  /* Smoother, more generously rounded green Quick Action buttons. */
+  #dashboardPage .quick-action{
+    border-radius:23px!important;
+  }
+  #dashboardPage .quick-action::after{
+    inset:4px!important;
+    border-radius:19px!important;
+  }
+
+  /* Bright rotating neon perimeter for all four Performance Overview cards. */
+  #dashboardPage .performance-card{
+    position:relative!important;
+    isolation:isolate;
+    overflow:hidden!important;
+    border-radius:16px!important;
+    border:1px solid rgba(40,255,125,.62)!important;
+    box-shadow:
+      0 0 9px rgba(0,255,105,.42),
+      0 0 18px rgba(0,235,95,.25)!important;
+    animation:performanceGlowPulse 3.8s ease-in-out infinite;
+  }
+  #dashboardPage .performance-card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:2;
+    padding:2px;
+    border-radius:inherit;
+    pointer-events:none;
+    background:conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(0,255,100,.08) 35deg,
+      #00ff66 72deg,
+      #d8ff00 105deg,
+      #ffffff 125deg,
+      #00f58a 155deg,
+      transparent 205deg,
+      transparent 360deg
+    );
+    -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;
+    mask-composite:exclude;
+    animation:performanceBorderOrbit 7s linear infinite;
+    filter:drop-shadow(0 0 5px rgba(0,255,100,.95)) drop-shadow(0 0 10px rgba(0,255,100,.72));
+  }
+  #dashboardPage .performance-card>*{
+    position:relative;
+    z-index:1;
+  }
+  @keyframes performanceBorderOrbit{
+    from{transform:rotate(0deg)}
+    to{transform:rotate(360deg)}
+  }
+  @keyframes performanceGlowPulse{
+    0%,100%{
+      box-shadow:0 0 8px rgba(0,255,105,.45),0 0 17px rgba(0,235,95,.25);
+    }
+    50%{
+      box-shadow:0 0 15px rgba(0,255,105,.9),0 0 30px rgba(0,245,100,.65),0 0 44px rgba(0,220,80,.35);
+    }
+  }
+  @media(prefers-reduced-motion:reduce){
+    #dashboardPage .performance-card,
+    #dashboardPage .performance-card::before{
+      animation:none!important;
+    }
+  }
+</style>
+
+
+<style id="zyraznet-neon-edge-glow-upgrade">
+/* Visual-only neon edge treatment requested for Progress & Activity and its related cards.
+   Layout, dimensions, markup, button order, and existing actions are intentionally untouched. */
+@keyframes zyraznetEdgeGlow {
+  0%,100% {
+    box-shadow:
+      0 0 0 1px rgba(75,226,255,.72),
+      0 0 10px rgba(0,205,255,.48),
+      0 0 22px rgba(0,145,255,.30),
+      inset 0 0 8px rgba(70,220,255,.13);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1.5px rgba(133,239,255,.95),
+      0 0 15px rgba(0,220,255,.72),
+      0 0 30px rgba(80,110,255,.46),
+      inset 0 0 12px rgba(70,220,255,.20);
+  }
+}
+
+/* My Progress & Activity: Packages selected, Checkpoint actions, Hours selected */
+#dashboardPage .progress-summary-grid > div {
+  border: 1px solid rgba(83,225,255,.82) !important;
+  border-radius: 12px;
+  animation: zyraznetEdgeGlow 2.8s ease-in-out infinite;
+}
+
+/* Hourly package choices (8, 10, 11 and 13 hours) */
+#dashboardPage .hourly-packages .package-card {
+  border: 1px solid rgba(83,225,255,.88) !important;
+  box-shadow:
+    0 0 0 1px rgba(83,225,255,.28),
+    0 0 11px rgba(0,190,255,.42),
+    0 0 22px rgba(70,105,255,.22),
+    inset 0 0 10px rgba(60,210,255,.10) !important;
+  animation: zyraznetEdgeGlow 2.8s ease-in-out infinite;
+}
+#dashboardPage .hourly-packages .package-card.selected,
+#dashboardPage .hourly-packages .package-card.expanded {
+  border-color: rgba(151,245,255,.98) !important;
+  box-shadow:
+    0 0 0 1.5px rgba(83,225,255,.72),
+    0 0 16px rgba(0,210,255,.68),
+    0 0 30px rgba(91,105,255,.42),
+    inset 0 0 13px rgba(60,210,255,.17) !important;
+}
+
+/* Goal & Progress, Achievements, What's New and Need Help */
+#dashboardPage .goal-card,
+#dashboardPage .achievement-list .achievement,
+#dashboardPage .announcement,
+#dashboardPage .support-card {
+  border: 1px solid rgba(83,225,255,.78) !important;
+  box-shadow:
+    0 0 0 1px rgba(83,225,255,.22),
+    0 0 11px rgba(0,190,255,.38),
+    0 0 22px rgba(70,105,255,.20),
+    inset 0 0 9px rgba(60,210,255,.09) !important;
+  animation: zyraznetEdgeGlow 3s ease-in-out infinite;
+}
+
+/* Action controls inside Need Help */
+#dashboardPage .support-contact-actions a,
+#dashboardPage .support-contact-actions button,
+#dashboardPage .support-card .support-btn {
+  border: 1px solid rgba(147,241,255,.95) !important;
+  box-shadow:
+    0 0 8px rgba(0,205,255,.55),
+    0 0 17px rgba(70,115,255,.32),
+    inset 0 0 8px rgba(255,255,255,.12) !important;
+}
+
+/* Main floating notifications button: prominent luminous rim, without changing its position or size */
+#dashboardPage .notification-fab {
+  border: 2px solid rgba(151,245,255,.98) !important;
+  box-shadow:
+    0 0 0 2px rgba(42,205,255,.35),
+    0 0 12px rgba(0,220,255,.88),
+    0 0 26px rgba(0,145,255,.72),
+    0 0 42px rgba(115,75,255,.48),
+    inset 0 0 10px rgba(255,255,255,.24) !important;
+  animation: zyraznetEdgeGlow 2.2s ease-in-out infinite;
+}
+#dashboardPage .notification-fab:hover,
+#dashboardPage .notification-fab:focus-visible {
+  box-shadow:
+    0 0 0 2px rgba(151,245,255,.78),
+    0 0 16px rgba(0,225,255,.98),
+    0 0 34px rgba(0,145,255,.84),
+    0 0 50px rgba(115,75,255,.58),
+    inset 0 0 12px rgba(255,255,255,.30) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #dashboardPage .progress-summary-grid > div,
+  #dashboardPage .hourly-packages .package-card,
+  #dashboardPage .goal-card,
+  #dashboardPage .achievement-list .achievement,
+  #dashboardPage .announcement,
+  #dashboardPage .support-card,
+  #dashboardPage .notification-fab {
+    animation: none !important;
+  }
+}
+</style>
+
+
+
+<!-- User-requested gold edge-only sweep on the fixed bottom navigation + stronger light-mode neon visibility -->
+<style id="zyraznet-gold-bottom-nav-and-light-neon">
+  /* Animate the conic-gradient angle itself, not the navigation or its overlay. */
+  @property --zyraz-gold-angle {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+  }
+  /* The four-item floating navigation gets a continuously travelling gold perimeter. */
+  body.dashboard-mode > .checkpoint-bottom-nav{
+    isolation:isolate!important;
+    overflow:visible!important;
+    border:1px solid rgba(255,220,105,.92)!important;
+    box-shadow:
+      0 0 0 1px rgba(255,190,35,.48),
+      0 0 12px rgba(255,190,35,.72),
+      0 0 25px rgba(255,166,0,.48),
+      0 10px 30px rgba(0,0,0,.32),
+      inset 0 1px 0 rgba(255,244,190,.28)!important;
+  }
+  body.dashboard-mode > .checkpoint-bottom-nav::before{
+    content:"";
+    position:absolute;
+    inset:-2px;
+    z-index:0;
+    padding:2px;
+    border-radius:inherit;
+    pointer-events:none;
+    /* A narrow travelling highlight: only the perimeter is painted, never the nav surface. */
+    --zyraz-gold-angle:0deg;
+    background:conic-gradient(from var(--zyraz-gold-angle),
+      transparent 0deg 302deg,
+      rgba(255,177,0,.12) 310deg,
+      rgba(255,194,35,.72) 320deg,
+      #fff4b0 328deg,
+      #fffdf0 334deg,
+      #ffc21e 340deg,
+      rgba(255,174,0,.55) 348deg,
+      transparent 356deg 360deg);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;
+    mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    mask-composite:exclude;
+    filter:drop-shadow(0 0 3px rgba(255,222,105,.98)) drop-shadow(0 0 7px rgba(255,166,0,.72));
+    animation:zyrazGoldEdgeTravel 4.2s linear infinite;
+    will-change:background;
+  }
+  body.dashboard-mode > .checkpoint-bottom-nav > .checkpoint-bottom-nav-item{
+    position:relative;
+    z-index:1;
+  }
+  body.dashboard-mode > .checkpoint-bottom-nav > .checkpoint-bottom-nav-item,
+  body.dashboard-mode > .checkpoint-bottom-nav > .checkpoint-bottom-nav-item *{
+    isolation:isolate;
+  }
+  body.dashboard-mode > .checkpoint-bottom-nav .checkpoint-bottom-nav-item.active{
+    color:#ffe08a!important;
+    background:linear-gradient(135deg,rgba(255,190,35,.22),rgba(255,226,125,.10))!important;
+    border-color:rgba(255,211,93,.62)!important;
+    box-shadow:0 0 9px rgba(255,190,35,.28),inset 0 0 10px rgba(255,210,90,.10)!important;
+  }
+  @keyframes zyrazGoldEdgeTravel{
+    from{--zyraz-gold-angle:0deg}
+    to{--zyraz-gold-angle:360deg}
+  }
+
+  /* Make existing luminous dashboard controls clearly visible against light surfaces. */
+  body.dashboard-mode:not(.dark) #dashboardPage .quick-action{
+    border:1px solid rgba(255,255,255,.98)!important;
+    box-shadow:0 0 0 1px rgba(40,125,190,.30),0 0 12px rgba(0,165,220,.38),0 0 22px rgba(105,75,220,.22),0 6px 16px rgba(30,55,110,.20),inset 0 1px 0 rgba(255,255,255,.55)!important;
+    filter:saturate(1.16) brightness(1.04);
+  }
+  body.dashboard-mode:not(.dark) #dashboardPage .performance-card{
+    border-color:rgba(0,190,92,.9)!important;
+    box-shadow:0 0 0 1px rgba(0,190,92,.28),0 0 12px rgba(0,220,100,.55),0 0 25px rgba(0,190,90,.32)!important;
+  }
+  body.dashboard-mode:not(.dark) #dashboardPage .progress-summary-grid>div,
+  body.dashboard-mode:not(.dark) #dashboardPage .hourly-packages .package-card,
+  body.dashboard-mode:not(.dark) #dashboardPage .goal-card,
+  body.dashboard-mode:not(.dark) #dashboardPage .achievement-list .achievement,
+  body.dashboard-mode:not(.dark) #dashboardPage .announcement,
+  body.dashboard-mode:not(.dark) #dashboardPage .support-card{
+    border-color:rgba(0,155,215,.88)!important;
+    box-shadow:0 0 0 1px rgba(0,170,225,.30),0 0 13px rgba(0,190,255,.48),0 0 25px rgba(75,105,235,.24),inset 0 0 9px rgba(0,180,235,.12)!important;
+  }
+  body.dashboard-mode:not(.dark) #dashboardPage .support-contact-actions a,
+  body.dashboard-mode:not(.dark) #dashboardPage .support-contact-actions button,
+  body.dashboard-mode:not(.dark) #dashboardPage .support-card .support-btn,
+  body.dashboard-mode:not(.dark) #dashboardPage .package-checkpoint-link,
+  body.dashboard-mode:not(.dark) #dashboardPage .tasks-package-preview-btn,
+  body.dashboard-mode:not(.dark) #dashboardPage .notification-fab{
+    border:1px solid rgba(255,255,255,.98)!important;
+    box-shadow:0 0 0 1px rgba(0,150,220,.35),0 0 12px rgba(0,185,255,.62),0 0 24px rgba(75,95,225,.34),inset 0 0 8px rgba(255,255,255,.20)!important;
+  }
+  body.dashboard-mode:not(.dark) #dashboardPage .dashboard-nav button,
+  body.dashboard-mode:not(.dark) #dashboardPage .quick-action-grid button{
+    text-shadow:0 1px 3px rgba(0,0,0,.24);
+  }
+  body.dashboard-mode:not(.dark) #dashboardPage .active-package{
+    box-shadow:0 0 9px rgba(255,220,0,.98),0 0 22px rgba(255,184,0,.78),0 0 36px rgba(255,170,0,.42),0 8px 22px rgba(150,105,0,.22),inset 0 1px 0 rgba(255,255,210,.95)!important;
+  }
+  @media(prefers-reduced-motion:reduce){
+    body.dashboard-mode > .checkpoint-bottom-nav::before{animation:none!important}
+  }
+</style>
+
+
+<!-- Golden Perimeter Light Sweep for the nine Visual Task Illustration cards -->
+<style id="zyraznet-visual-task-neon-perimeter">
+  /* Lightweight cyan/blue/violet perimeter sweep for the nine task cards. */
+  .standalone-tasks-page .tasks-preview-gallery .tasks-preview-image{
+    position:relative!important;
+    isolation:isolate;
+    border:1px solid rgba(91,226,255,.9)!important;
+    box-shadow:0 0 0 1px rgba(55,190,255,.18),0 0 8px rgba(45,190,255,.2)!important;
+  }
+  .standalone-tasks-page .tasks-preview-gallery .tasks-preview-image::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:3;
+    padding:2px;
+    border-radius:inherit;
+    pointer-events:none;
+    background:conic-gradient(from 0deg,
+      transparent 0deg 292deg,
+      rgba(48,210,255,.18) 304deg,
+      #35eaff 318deg,
+      #f4ffff 326deg,
+      #648cff 336deg,
+      #c77bff 346deg,
+      transparent 356deg 360deg);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;
+    mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    mask-composite:exclude;
+    animation:zyrazTaskNeonEdgeTravel 5s linear infinite;
+  }
+  .standalone-tasks-page .tasks-preview-gallery .tasks-preview-image img,
+  .standalone-tasks-page .tasks-preview-gallery .tasks-preview-image figcaption{
+    position:relative;
+    z-index:1;
+  }
+  @keyframes zyrazTaskNeonEdgeTravel{
+    to{transform:rotate(1turn)}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .standalone-tasks-page .tasks-preview-gallery .tasks-preview-image::after{animation:none!important}
+  }
+</style>
 
 </body>
 </html>
