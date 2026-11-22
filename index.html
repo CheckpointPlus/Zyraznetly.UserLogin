@@ -3432,6 +3432,19 @@ html body #accountModal #checkpointWallet #walletTopUpBtn{
 #zyrazAdminWorkspace .zyraz-admin-muted{opacity:.72;font-size:.82rem}
 #zyrazAdminWorkspace .zyraz-admin-error{color:#ffb7b7}
 #zyrazAdminWorkspace [data-admin-workspace-tab]{border:1px solid rgba(120,160,255,.25);border-radius:9px;padding:8px 10px;background:rgba(100,120,220,.15);color:#fff;margin:0 5px 8px 0}
+#zyrazAdminWorkspace .zyraz-admin-users-toolbar{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
+#zyrazAdminWorkspace .zyraz-admin-users-toolbar input{flex:1;min-width:190px;padding:11px 12px;border-radius:10px;border:1px solid #64748b;background:#0e1426;color:#fff;font:inherit}
+#zyrazAdminWorkspace .zyraz-admin-users-toolbar button,#zyrazAdminWorkspace .zyraz-admin-users-pagination button{border:1px solid rgba(120,190,255,.4);border-radius:10px;padding:10px 12px;background:#174c68;color:#fff;font-weight:700}
+#zyrazAdminWorkspace .zyraz-admin-users-pagination{display:flex;justify-content:space-between;gap:10px;margin-top:14px}
+#zyrazAdminWorkspace .zyraz-admin-users-pagination button:disabled{opacity:.4;cursor:not-allowed}
+#zyrazAdminWorkspace .zyraz-admin-users-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#zyrazAdminWorkspace .zyraz-admin-users-stats .zyraz-admin-row{margin:0;display:grid;gap:5px}
+#zyrazAdminWorkspace .zyraz-admin-user-name{display:block;font-size:1rem;margin-bottom:4px}
+#zyrazAdminWorkspace .zyraz-admin-user-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+#zyrazAdminWorkspace .zyraz-admin-user-details>div{min-width:0;padding:8px;border-radius:8px;background:rgba(255,255,255,.045)}
+#zyrazAdminWorkspace .zyraz-admin-user-details span{display:block;font-size:.7rem;opacity:.7;margin-bottom:3px}
+#zyrazAdminWorkspace .zyraz-admin-user-details strong{display:block;font-size:.78rem;overflow-wrap:anywhere}
+@media(max-width:480px){#zyrazAdminWorkspace .zyraz-admin-user-details{grid-template-columns:1fr}}
 </style>
 
 <div id="zyrazAdminWorkspace" role="dialog" aria-modal="true" aria-labelledby="zyrazAdminWorkspaceTitle">
@@ -3508,15 +3521,8 @@ html body #accountModal #checkpointWallet #walletTopUpBtn{
 
     try {
       if (tab === 'users') {
-        workspaceTitle.textContent = '👥 User Management — read only';
-        const snap = await db.collection('users').limit(100).get();
-        workspaceBody.replaceChildren();
-        if (snap.empty) return showMessage('No user profiles were returned.');
-        snap.forEach(doc => {
-          const u = doc.data() || {};
-          addRow(workspaceBody, u.fullName || u.username || 'Unnamed user',
-            [u.email || '', u.walletNumber || '', 'Role: ' + (u.role || 'user')].filter(Boolean).join(' · '));
-        });
+        workspaceTitle.textContent = '👥 User Management';
+        renderUserManagement();
       } else if (tab === 'transactions') {
         workspaceTitle.textContent = '💳 Pending Transactions — read only';
         const snap = await db.collection('transactions').where('status', '==', 'pending').limit(100).get();
@@ -3541,6 +3547,178 @@ html body #accountModal #checkpointWallet #walletTopUpBtn{
     } catch (error) {
       console.error('Admin workspace load failed:', error);
       showMessage('Could not load this admin data. Check Firestore Security Rules and browser console permissions.', true);
+    }
+  }
+
+  // User Management: paginated Firestore reads, newest registrations first.
+  const USERS_PAGE_SIZE = 25;
+  let usersPageCursors = [null];
+  let usersPageIndex = 0;
+  let usersLastVisible = null;
+  let usersPageRows = [];
+  let usersLoadToken = 0;
+
+  function formatUserDate(value) {
+    try {
+      const date = value && typeof value.toDate === 'function' ? value.toDate() :
+        (value instanceof Date ? value : (typeof value === 'number' ? new Date(value) : null));
+      return date && !Number.isNaN(date.getTime())
+        ? date.toLocaleString('en-KE', {dateStyle:'medium', timeStyle:'short'})
+        : 'Not recorded';
+    } catch (_) { return 'Not recorded'; }
+  }
+
+  function userText(parent, tag, value, className) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    node.textContent = value == null || value === '' ? '—' : String(value);
+    parent.appendChild(node);
+    return node;
+  }
+
+  function renderUserRows(filterText) {
+    const list = document.getElementById('zyrazAdminUsersList');
+    const summary = document.getElementById('zyrazAdminUsersSummary');
+    if (!list || !summary) return;
+    const q = String(filterText || '').trim().toLowerCase();
+    const filtered = usersPageRows.filter(({uid, data:u}) =>
+      !q || [uid, u.fullName, u.username, u.email, u.phone, u.role, u.status]
+        .some(value => String(value || '').toLowerCase().includes(q))
+    );
+    list.replaceChildren();
+    summary.textContent = q
+      ? `Showing ${filtered.length} matching account(s) on this page. Search covers the current page.`
+      : `Showing ${usersPageRows.length} account(s) on page ${usersPageIndex + 1}.`;
+
+    if (!filtered.length) {
+      userText(list, 'p', q ? 'No matching accounts on this page.' : 'No user profiles were found.');
+      return;
+    }
+
+    filtered.forEach(({uid, data:u}) => {
+      const card = document.createElement('article');
+      card.className = 'zyraz-admin-row zyraz-admin-user-card';
+      const name = userText(card, 'strong', u.fullName || u.username || 'Unnamed user');
+      name.className = 'zyraz-admin-user-name';
+      userText(card, 'div', u.email || 'No email recorded', 'zyraz-admin-muted');
+      const details = document.createElement('div');
+      details.className = 'zyraz-admin-user-details';
+      [
+        ['Phone', u.phone || 'Not recorded'],
+        ['Firebase UID', uid],
+        ['Registered', formatUserDate(u.createdAt)],
+        ['Role', u.role || 'user'],
+        ['Status', u.status || 'Not set'],
+        ['Wallet balance', formatMoney(u.walletBalance)]
+      ].forEach(([label, value]) => {
+        const item = document.createElement('div');
+        const key = document.createElement('span'); key.textContent = label;
+        const val = document.createElement('strong'); val.textContent = String(value);
+        item.append(key, val); details.appendChild(item);
+      });
+      card.appendChild(details);
+      list.appendChild(card);
+    });
+  }
+
+  async function renderUserManagement(reset) {
+    if (!currentAdmin || !currentUser || !workspaceBody) return;
+    if (reset) { usersPageCursors = [null]; usersPageIndex = 0; }
+    const token = ++usersLoadToken;
+    workspaceBody.replaceChildren();
+
+    const toolbar = document.createElement('div');
+    toolbar.className = 'zyraz-admin-users-toolbar';
+    const search = document.createElement('input');
+    search.type = 'search'; search.id = 'zyrazAdminUsersSearch';
+    search.placeholder = 'Filter this page by name, email, phone or UID';
+    search.setAttribute('aria-label', 'Filter users on this page');
+    const refresh = document.createElement('button'); refresh.type = 'button';
+    refresh.textContent = '↻ Refresh'; refresh.dataset.adminUsersAction = 'refresh';
+    toolbar.append(search, refresh);
+    workspaceBody.appendChild(toolbar);
+
+    const stats = document.createElement('div');
+    stats.className = 'zyraz-admin-users-stats';
+    const total = document.createElement('div'); total.className = 'zyraz-admin-row';
+    total.innerHTML = '<span class="zyraz-admin-muted">Total registered profiles</span><strong id="zyrazAdminUsersTotal">Checking…</strong>';
+    const page = document.createElement('div'); page.className = 'zyraz-admin-row';
+    page.innerHTML = '<span class="zyraz-admin-muted">Current page</span><strong id="zyrazAdminUsersPage">—</strong>';
+    stats.append(total, page); workspaceBody.appendChild(stats);
+
+    const summary = document.createElement('p'); summary.id = 'zyrazAdminUsersSummary';
+    summary.className = 'zyraz-admin-muted'; workspaceBody.appendChild(summary);
+    const list = document.createElement('div'); list.id = 'zyrazAdminUsersList';
+    list.setAttribute('aria-live', 'polite'); workspaceBody.appendChild(list);
+
+    const pagination = document.createElement('div');
+    pagination.className = 'zyraz-admin-users-pagination';
+    const previous = document.createElement('button'); previous.type = 'button';
+    previous.textContent = '← Previous'; previous.dataset.adminUsersAction = 'previous';
+    const next = document.createElement('button'); next.type = 'button';
+    next.textContent = 'Next →'; next.dataset.adminUsersAction = 'next';
+    pagination.append(previous, next); workspaceBody.appendChild(pagination);
+
+    search.addEventListener('input', () => renderUserRows(search.value));
+    refresh.addEventListener('click', () => renderUserManagement(false));
+    previous.addEventListener('click', () => {
+      if (usersPageIndex <= 0) return;
+      usersPageIndex--;
+      renderUserManagement(false);
+    });
+    next.addEventListener('click', () => {
+      if (!usersLastVisible) return;
+      usersPageCursors[usersPageIndex + 1] = usersLastVisible;
+      usersPageIndex++;
+      renderUserManagement(false);
+    });
+
+    const listNode = document.getElementById('zyrazAdminUsersList');
+    userText(listNode, 'p', 'Loading registered accounts…');
+    try {
+      const collection = db.collection('users');
+      // Firestore's count aggregation avoids downloading every profile just to count them.
+      try {
+        if (typeof collection.count === 'function') {
+          const countSnapshot = await collection.count().get();
+          if (token !== usersLoadToken) return;
+          const totalNode = document.getElementById('zyrazAdminUsersTotal');
+          if (totalNode) totalNode.textContent = Number(countSnapshot.data().count || 0).toLocaleString('en-KE');
+        } else {
+          const totalNode = document.getElementById('zyrazAdminUsersTotal');
+          if (totalNode) totalNode.textContent = 'Available with count support';
+        }
+      } catch (countError) {
+        console.warn('User count aggregation is unavailable:', countError);
+        const totalNode = document.getElementById('zyrazAdminUsersTotal');
+        if (totalNode) totalNode.textContent = 'Count unavailable';
+      }
+      if (token !== usersLoadToken) return;
+
+      let query = collection.orderBy('createdAt', 'desc').limit(USERS_PAGE_SIZE);
+      const cursor = usersPageCursors[usersPageIndex];
+      if (cursor) query = query.startAfter(cursor);
+      const snapshot = await query.get();
+      if (token !== usersLoadToken) return;
+      usersPageRows = snapshot.docs.map(doc => ({uid:doc.id, data:doc.data() || {}}));
+      usersLastVisible = snapshot.docs.length === USERS_PAGE_SIZE ? snapshot.docs[snapshot.docs.length - 1] : null;
+      const pageNode = document.getElementById('zyrazAdminUsersPage');
+      if (pageNode) pageNode.textContent = String(usersPageIndex + 1);
+      previous.disabled = usersPageIndex === 0;
+      next.disabled = !usersLastVisible;
+      renderUserRows('');
+      if (snapshot.empty && usersPageIndex > 0) {
+        usersPageIndex--;
+        renderUserManagement(false);
+      }
+    } catch (error) {
+      console.error('Could not load registered users:', error);
+      const totalNode = document.getElementById('zyrazAdminUsersTotal');
+      if (totalNode) totalNode.textContent = '—';
+      const pageNode = document.getElementById('zyrazAdminUsersPage');
+      if (pageNode) pageNode.textContent = String(usersPageIndex + 1);
+      list.replaceChildren();
+      userText(list, 'p', 'Could not load user profiles. Verify that the published Firestore rules allow the approved admin UID to read /users, and check whether older profiles contain createdAt.', 'zyraz-admin-error');
     }
   }
 
