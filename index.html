@@ -522,6 +522,9 @@ body.dark #closeAccountModal{background:#30384d;color:#fff}
 
 
 .admin-center-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.admin-center-grid article{display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid rgba(106,90,205,.2);border-radius:15px;background:rgba(106,90,205,.06)}.admin-center-grid small,.admin-center-note{opacity:.72;font-size:.78rem}.admin-center-grid button{border-radius:10px;padding:8px 10px;border:1px solid rgba(106,90,205,.3);background:rgba(106,90,205,.12);font-weight:700;cursor:pointer}.admin-control-center #adminToolNotice{margin-top:8px;font-size:.8rem}
+#dashboardPage .admin-header-button{position:fixed!important;top:68px!important;right:18px!important;z-index:10030!important;pointer-events:auto!important;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;padding:7px 10px;border:1px solid rgba(106,90,205,.32);border-radius:999px;background:linear-gradient(120deg,#6a5acd,#00a8d6);color:#fff;font-size:.72rem;font-weight:800;white-space:nowrap;cursor:pointer;box-shadow:0 3px 10px rgba(0,100,180,.18);touch-action:manipulation}
+#dashboardPage .admin-header-button:active{transform:scale(.96)}
+@media(max-width:420px){#dashboardPage .dashboard-title-row{gap:6px}#dashboardPage .admin-header-button{top:64px!important;right:12px!important;min-height:30px;padding:6px 8px;font-size:.65rem}}
 </style>
 
 <style id="zyraznet-auth-brand-logo-only">
@@ -737,7 +740,10 @@ body.dark #closeAccountModal{background:#30384d;color:#fff}
       <div class="dashboard-profile-text"><div id="dashName" style="font-weight:600;">User</div><div id='dashEmail' style="font-size:0.72rem;opacity:0.75;">you@example.com</div></div>
       <img id="dashPhoto" src="https://via.placeholder.com/100" alt="photo" style="width:46px;height:46px;border-radius:50%;border:2px solid #6a5acd;">
     </div>
-    <div class="dashboard-title-row"><h2>Dashboard</h2></div>
+    <div class="dashboard-title-row">
+      <h2>Dashboard</h2>
+      <button type="button" id="adminControlCenter" class="admin-header-button" data-admin-tool="users" aria-label="Open Admin Control Center" style="display:none;">🛡 Admin</button>
+    </div>
 
     <button type="button" id="myAccountBtn" class="dashboard-hidden-trigger" tabindex="-1" aria-hidden="true">Open account</button>
 
@@ -806,17 +812,6 @@ body.dark #closeAccountModal{background:#30384d;color:#fff}
     </div>
 
 
-    <section class="dashboard-section admin-control-center" id="adminControlCenter" aria-label="Admin Control Center">
-      <div class="section-heading">🛡 Admin Control Center</div>
-      <p class="admin-center-note">Admin tools overview. Sensitive actions require secure server-side admin authorization before they can be enabled.</p>
-      <div class="admin-center-grid">
-        <article><strong>👥 User Management</strong><small>Review accounts and user activity</small><button type="button" data-admin-tool="users">Open users</button></article>
-        <article><strong>💳 Transaction Monitoring</strong><small>Review wallet transactions and statuses</small><button type="button" data-admin-tool="transactions">Review ledger</button></article>
-        <article><strong>📣 Announcements</strong><small>Draft platform-wide updates</small><button type="button" data-admin-tool="announcements">Create notice</button></article>
-        <article><strong>🧾 Audit & Support</strong><small>Support requests and security events</small><button type="button" data-admin-tool="audit">View activity</button></article>
-      </div>
-      <div id="adminToolNotice" role="status" aria-live="polite"></div>
-    </section>
 
     <div class="dashboard-section">
       <div class="section-heading">📊 Performance Overview</div>
@@ -1867,38 +1862,47 @@ body.dark #closeAccountModal{background:#30384d;color:#fff}
       reader.readAsDataURL(file);
     });
 
-    // Logout handler - open custom confirm modal
-    const logoutConfirm = document.getElementById('logoutConfirm');
-    const cancelLogout = document.getElementById('cancelLogout');
-    const confirmLogout = document.getElementById('confirmLogout');
-
-    if(accountLogout) accountLogout.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      openModal(logoutConfirm);
-    });
-
-    if(cancelLogout) cancelLogout.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      closeModal(logoutConfirm);
-    });
-
-    if(confirmLogout) confirmLogout.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      // close modals then return to login (do NOT erase stored user data)
-      closeAllModals();
-      // hide main pages, show login
-      dashboardPage.style.display = 'none';
-      body.classList.remove('dashboard-mode');
-      welcomePage.style.display = 'none';
-      signupPage.style.display = 'none';
-      resetPage.style.display = 'none';
-      loginPage.style.display = 'block';
-      // prefill username for convenience
-      const savedUser = localStorage.getItem('savedUsername') || '';
-      const loginUserInput = document.getElementById('loginUsername'); if(loginUserInput) loginUserInput.value = savedUser;
-      const loginPassInput = document.getElementById('loginPassword'); if(loginPassInput) loginPassInput.value = '';
-      showPopup('You have been logged out. Your account data is still saved for next time.', 2500);
-    });
+    // Sign out immediately when the Account logout button is pressed.
+    // Firebase Auth is the source of truth; stored profile details are kept for next login.
+    if (accountLogout) {
+      accountLogout.type = 'button';
+      accountLogout.addEventListener('click', async (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (accountLogout.disabled) return;
+        const originalLabel = accountLogout.textContent;
+        accountLogout.disabled = true;
+        accountLogout.textContent = 'Signing out…';
+        accountLogout.setAttribute('aria-busy', 'true');
+        try {
+          const auth = window.zyrazFirebase && window.zyrazFirebase.auth;
+          if (!auth) throw new Error('Firebase Authentication is not available. Check your connection and try again.');
+          await auth.signOut();
+          closeAllModals();
+          dashboardPage.style.display = 'none';
+          body.classList.remove('dashboard-mode');
+          welcomePage.style.display = 'none';
+          signupPage.style.display = 'none';
+          resetPage.style.display = 'none';
+          loginPage.style.display = 'block';
+          const savedEmail = localStorage.getItem('savedEmail') || '';
+          const loginUserInput = document.getElementById('loginUsername');
+          if (loginUserInput) loginUserInput.value = savedEmail;
+          const loginPassInput = document.getElementById('loginPassword');
+          if (loginPassInput) loginPassInput.value = '';
+          showPopup('You have been logged out. Your account details are saved for next time.', 2500);
+        } catch (error) {
+          console.error('Firebase sign-out failed:', error);
+          showPopup((window.zyrazFirebase && window.zyrazFirebase.authMessage)
+            ? window.zyrazFirebase.authMessage(error)
+            : (error.message || 'Could not sign out. Please try again.'), 3500);
+        } finally {
+          accountLogout.disabled = false;
+          accountLogout.textContent = originalLabel;
+          accountLogout.removeAttribute('aria-busy');
+        }
+      });
+    }
 
     // ====================================================
     // Home button: resets dashboard view
@@ -3468,6 +3472,9 @@ html body #accountModal #checkpointWallet #walletTopUpBtn{
   'use strict';
 
   const firebaseBridge = window.zyrazFirebase;
+  // Share the initialized Firestore instance with every admin helper in this IIFE.
+  // loadAdminTab has its own local db, but renderUserManagement also needs this binding.
+  const db = firebaseBridge && firebaseBridge.db;
   const adminSection = document.getElementById('adminControlCenter');
   const workspace = document.getElementById('zyrazAdminWorkspace');
   const workspaceBody = document.getElementById('zyrazAdminWorkspaceBody');
